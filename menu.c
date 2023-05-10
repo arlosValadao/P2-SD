@@ -58,9 +58,12 @@ void criar_menu_02(char vetor_menu02[][30]){
     // atribuindo valores às strings do vetor
     sprintf(vetor_menu02[0], "Acender Led");
     sprintf(vetor_menu02[1], "Sensor Analogico A0");
-    sprintf(vetor_menu02[2], "Sensor Digital D0");
-    sprintf(vetor_menu02[3], "Sensor Digital D1");
-    sprintf(vetor_menu02[6], "Voltar");
+    sprintf(vetor_menu02[2], "Monitorar Analogico A0");
+    sprintf(vetor_menu02[3], "Sensor Digital D0");
+    sprintf(vetor_menu02[4], "Monitorar Digital D0");
+    sprintf(vetor_menu02[5], "Sensor Digital D0");
+    sprintf(vetor_menu02[6], "Monitorar Digital D1");
+    sprintf(vetor_menu02[7], "Voltar");
 }
 
 
@@ -79,7 +82,7 @@ void mostrar_menu_02(int vetor_menu02[][30],int posicaoAtual){
 
 // Envia a informacao com base no vetor e posicao passadas
 void sendData(int fd, unsigned char* array, unsigned char pos) {
-    serialPutchar(fd, arraypos])[;
+    serialPutchar(fd, array[pos]);
     delay(2);
 }
 
@@ -131,10 +134,8 @@ int main() {
     unsigned char selectedNode;
     // Guarda os bytes provenientes do sensor analogico da Node
     unsigned char analogBytes[2];
-    unsigned char array_command[] = {
-                                        0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7,
-                                        0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE
-                                    };
+    unsigned char followCommands[] = { 0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6 };
+    unsigned char ConsultCommands[] = { 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6 };
     unsigned char select_node[] = {
                                         0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
                                         0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0x10
@@ -286,7 +287,8 @@ int main() {
                     // Mandar mensagem para a node e pegar o dado para exibir no LCD
                     lcdPuts(lcdfd, "ENVIANDO COMANDO...");
                     // Enviando comando a Node selecionada
-                    sendData(fd, array_command, posicao);
+                    // Logica para implementar a consulta ou monitoramento
+                    sendData(fd, followCommands, posicao);
                     delay(500);
                     lcdClear(lcdfd);
                     lcdPuts(lcdfd, "COMANDO ENVIADO!");

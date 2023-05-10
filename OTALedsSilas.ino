@@ -137,7 +137,7 @@ void loop() {
           if(isValidCommand(r)) {
             r = extract_command_info(r);
             // Pegar dado do pino analogico
-            if(r) {
+            if(!r) {
               analogSensorData = (unsigned short int) analogRead(sensors_pin[r]);
               analogBytes = short2bytes(analogSensorData);
               Serial.write(analogBytes[0]);
