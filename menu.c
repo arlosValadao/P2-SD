@@ -23,7 +23,7 @@ int lcd;
 int fd;
 
 
-int qtdItensMenu01 = 34;
+int qtdItensMenu01 = 33;
 int qtdItensMenu02 = 8;
 
 
@@ -38,32 +38,6 @@ void imprimir_menu_lcd(char opcoes_menu[][30], int posicaoAtual) {
     // imprimindo as strings do vetor no LCD
     //lcdPosition(lcd, 0, 0);
     lcdPrintf(lcd, ("%s\n", opcoes_menu[posicaoAtual]));
-}
-
-
-
-void criar_menu_01(char vetor_menu01[][30]){
-    // atribuindo valores às strings do vetor
-    sprintf(vetor_menu01[0], "Selecionar Todas as Unidades");
-    for (int i = 1; i < qtdItensMenu01 - 2 ; i++) {
-        sprintf(vetor_menu01[i], "Selecionar Unidade %d", i);
-    }
-    sprintf(vetor_menu01[qtdItensMenu01 - 2], "Sair");
-
-}
-
-
-
-void criar_menu_02(char vetor_menu02[][30]){
-    // atribuindo valores às strings do vetor
-    sprintf(vetor_menu02[0], "Acender Led");
-    sprintf(vetor_menu02[1], "Sensor Analogico A0");
-    sprintf(vetor_menu02[2], "Monitorar Analogico A0");
-    sprintf(vetor_menu02[3], "Sensor Digital D0");
-    sprintf(vetor_menu02[4], "Monitorar Digital D0");
-    sprintf(vetor_menu02[5], "Sensor Digital D0");
-    sprintf(vetor_menu02[6], "Monitorar Digital D1");
-    sprintf(vetor_menu02[7], "Voltar");
 }
 
 
@@ -164,6 +138,26 @@ int main() {
     int buttonMenosState;
     int buttonEnterState;
 
+
+    // Fazer os menus
+    // Menu 01
+    sprintf(vetor_menu01[0], "Selecionar Todas as Unidades");
+    for (int i = 1; i < qtdItensMenu01 - 1 ; i++) {
+        sprintf(vetor_menu01[i], "Selecionar Unidade %d", i);
+    }
+    sprintf(vetor_menu01[qtdItensMenu01 - 1], "Sair");
+
+    // Menu 02
+    sprintf(vetor_menu02[0], "Acender Led");
+    sprintf(vetor_menu02[1], "Sensor Analogico A0");
+    sprintf(vetor_menu02[2], "Monitorar Analogico A0");
+    sprintf(vetor_menu02[3], "Sensor Digital D0");
+    sprintf(vetor_menu02[4], "Monitorar Digital D0");
+    sprintf(vetor_menu02[5], "Sensor Digital D0");
+    sprintf(vetor_menu02[6], "Monitorar Digital D1");
+    sprintf(vetor_menu02[7], "Voltar");
+    
+
     // Configurar UART
     if ((fd = serialOpen (UART_3, BAUD_RATE)) < 0){
         fprintf (stderr, "Unable to open serial device: %s\n", strerror (errno)) ;
@@ -196,6 +190,7 @@ int main() {
     int posicao = 0;
     
     // Mostrar a primeira opção do primeiro Menu
+    delay(2000);
     mostrar_menu_01(vetor_menu01, posicao);
     
     while(1){
@@ -205,7 +200,7 @@ int main() {
         buttonEnterState = digitalRead(BUTTON_ENTER);
         
         // Entender esse Dalay, se precisa ou não
-        //delay(230);
+        delay(200);
         
         if (!buttonMaisState) {
             // O botão foi pressionado
@@ -254,8 +249,8 @@ int main() {
             if (menu01 == 1){
                 // Verificar se apertou enter na posição Sair
                 escolhaMenu01 = posicao;
-                if (escolhaMenu01 == qtdItensMenu02 - 1){
-                    lcdPuts(lcdfd, "TCHAU...");
+                if (escolhaMenu01 == qtdItensMenu01 - 1){
+                    lcdPuts(lcd, "TCHAU...");
                     delay(2000);
                     break;
                 }else{
@@ -274,7 +269,7 @@ int main() {
                 }
 
             }else if (menu02 == 1){
-                int escolhaMenu02 = posicao;
+                escolhaMenu02 = posicao;
                 // Verificar se apertou enter na posição Voltar
                 if (escolhaMenu02 == qtdItensMenu02 - 1){
                     // Desseleciona a Node previamente selecionada
@@ -282,16 +277,17 @@ int main() {
                     //serialPutchar(fd, deselect_node[posicao - 1]);
                     menu01 = 1;
                     menu02 = 0;
-                    mostrar_menu_01(vetor_menu02, escolhaMenu01);
+                    posicao = escolhaMenu01;
+                    mostrar_menu_01(vetor_menu01, posicao);
                 }else{
                     // Mandar mensagem para a node e pegar o dado para exibir no LCD
-                    lcdPuts(lcdfd, "ENVIANDO COMANDO...");
+                    lcdPuts(lcd, "ENVIANDO COMANDO...");
                     // Enviando comando a Node selecionada
                     // Logica para implementar a consulta ou monitoramento
                     sendData(fd, followCommands, posicao);
                     delay(500);
-                    lcdClear(lcdfd);
-                    lcdPuts(lcdfd, "COMANDO ENVIADO!");
+                    lcdClear(lcd);
+                    lcdPuts(lcd, "COMANDO ENVIADO!");
                     delay(500);
                     recvdData = recvdData(fd, analogBytes, posicao);
                     lcdClear(lcd);
