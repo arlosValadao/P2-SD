@@ -1,7 +1,11 @@
 #include <stdio.h>
-#include <wiringPi.h>
-#include <lcd.h>
+#include <string.h>
+#include <errno.h>
+#include <time.h>
 
+#include <lcd.h>
+#include <wiringPi.h>
+#include <wiringSerial.h>
 
 
 //USE WIRINGPI PIN NUMBERS
@@ -11,8 +15,8 @@
 #define LCD_D5  24               //Data pin 5
 #define LCD_D6  26               //Data pin 6
 #define LCD_D7  27               //Data pin 7
-#define BUTTON_MAIS  23          // PA07
-#define BUTTON_MENOS  25         // PA10
+#define BUTTON_MAIS  25          // PA07
+#define BUTTON_MENOS  23         // PA10
 #define BUTTON_ENTER  19         // PA20
 
 #define UART_3 "/dev/ttyS3"
@@ -37,7 +41,7 @@ void imprimir_menu_lcd(char opcoes_menu[][30], int posicaoAtual) {
     lcdClear(lcd);    
     // imprimindo as strings do vetor no LCD
     //lcdPosition(lcd, 0, 0);
-    lcdPrintf(lcd, ("%s\n", opcoes_menu[posicaoAtual]));
+    lcdPrintf(lcd, "%s\n", opcoes_menu[posicaoAtual]);
 }
 
 
@@ -68,6 +72,14 @@ unsigned char recvDigitalData(int fd) {
     return 0; // Nao existe nenhum dado a ser lido no buffer
 }
 
+
+unsigned short int bytes2short(unsigned char* analogbytes) {
+    unsigned short int analogdata = 0;
+    analogdata = (analogdata | analogbytes[1]) << 8;
+    analogdata = (analogdata | analogbytes[0]);
+    return analogdata;
+}
+
 // Move os dados do buffer para o vetor de
 // acordo com as regras definidas no protocolo
 void getAnalogData(int fd, unsigned char* analogBytes) {
@@ -75,7 +87,6 @@ void getAnalogData(int fd, unsigned char* analogBytes) {
         analogBytes[0] = serialGetchar(fd);
         delay(3);
         analogBytes[1] = serialGetchar(fd);
-        return bytes2short(analogBytes);
     }
 }
 
@@ -89,14 +100,8 @@ unsigned short int recvAnalogData(int fd, unsigned char* analogBytes) {
     return 0; // Nao existe nenhum dado a ser lido no buffer
 }
 
-unsigned short int bytes2short(unsigned char* analogBytes) {
-    unsigned short int analogData = 0;
-    analogData = (analogData | analogBytes[1]) << 8;
-    analogData = (analogData | analogBytes[0])
-    return analogData;
-}
 
-unsigned short int recvData(int fd, unsigned char* analogBytes, int pos) {
+unsigned short int recvdData(int fd, unsigned char* analogBytes, int pos) {
     // Sensor Analogico
     if (pos == 1) return recvAnalogData(fd, analogBytes);
     // Sensor digital
@@ -141,11 +146,11 @@ int main() {
 
     // Fazer os menus
     // Menu 01
-    sprintf(vetor_menu01[0], "Selecionar Todas as Unidades");
-    for (int i = 1; i < qtdItensMenu01 - 1 ; i++) {
-        sprintf(vetor_menu01[i], "Selecionar Unidade %d", i);
+    for (int i = 0; i < qtdItensMenu01 - 1 ; i++) {
+        sprintf(vetor_menu01[i], "Selecionar Unidade %d", i + 1);
     }
     sprintf(vetor_menu01[qtdItensMenu01 - 1], "Sair");
+    sprintf(vetor_menu01[qtdItensMenu01 - 2], "Selecionar Todas as Unidades");
 
     // Menu 02
     sprintf(vetor_menu02[0], "Acender Led");
@@ -184,7 +189,7 @@ int main() {
     int escolhaMenu02;
 
     // Guarda os dados provenientes da Node
-    unsigned short int recvdData = 0;
+    unsigned short int recvData = 0;
 
     // Variavel para controlar o que vai ser mostrado no Menu
     int posicao = 0;
@@ -250,6 +255,7 @@ int main() {
                 // Verificar se apertou enter na posição Sair
                 escolhaMenu01 = posicao;
                 if (escolhaMenu01 == qtdItensMenu01 - 1){
+					lcdClear(lcd);
                     lcdPuts(lcd, "TCHAU...");
                     delay(2000);
                     break;
@@ -284,19 +290,22 @@ int main() {
                     lcdPuts(lcd, "ENVIANDO COMANDO...");
                     // Enviando comando a Node selecionada
                     // Logica para implementar a consulta ou monitoramento
-                    sendData(fd, followCommands, posicao);
+                    sendData(fd, ConsultCommands, posicao);
                     delay(500);
                     lcdClear(lcd);
                     lcdPuts(lcd, "COMANDO ENVIADO!");
                     delay(500);
-                    recvdData = recvdData(fd, analogBytes, posicao);
+                    recvData = recvdData(fd, analogBytes, posicao);
                     lcdClear(lcd);
                     if(recvdData) {
-                        lcdPrintf("DADO DO SENSOR -> %hu", recvdData);
+						lcdClear(lcd);
+						lcdPuts(lcd, "NODE SELECIONADA!");
+						delay(2000);
+                        lcdPrintf(lcd, "DADO DO SENSOR -> %hu", recvdData);
                         delay(2000);
                     }
                     else {
-                        lcdPuts("NODE INALCANCAVEL :/");
+                        lcdPuts(lcd, "NODE INALCANCAVEL :/");
                         delay(2000);
                     }
                     //serialPutchar(fd, array_command[menu_counter]);
