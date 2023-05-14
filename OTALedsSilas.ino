@@ -15,6 +15,8 @@ const char* host = "ESP-10.0.0.107";
 int led_pin = LED_BUILTIN;
 #define N_DIMMERS 3
 int dimmer_pin[] = {14, 5, 15};
+const int analogInPin = A0;  // ESP8266 Analog Pin ADC0 = A0
+
 
 void setup() {
   Serial.begin(115200);
@@ -25,7 +27,6 @@ void setup() {
 
   Serial.println("Booting");
   WiFi.mode(WIFI_STA);
-
   WiFi.begin(ssid, password);
 
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
@@ -75,11 +76,22 @@ void setup() {
 void loop() {
   ArduinoOTA.handle();
 
+  //le valor analogico (2^10)
+  analogSensorValue = analogRead(analogInPin); 
+  
+
   if (Serial.available() > 0 ){
       char r = Serial.read();
 
       if (r == 10000001){
         selectPlaca = true
+        char sensorSelect = Serial.read();
+        if (sensorSelect == 10000001){ // Escolheu o sensor analógico
+          int b1 = (analogSensorValue >> 5); //Pega os 5 bits mais significativos
+          int b2 = (analogSensorValue & 0b00000011111); //Pega os 5 bits menos significativos
+          Serial.Write(b1);
+          Serial.Write(b2);
+        }
       }
       if (r == 00000001){
         selectPlaca = false
@@ -88,25 +100,24 @@ void loop() {
       if (selectPlaca){
         //
       }
-       
+
+      if (r = 10000002)
+
   }
 
 
+  // if (Serial.available() > 0 ){
+  //     char r = Serial.read();
 
-  if (Serial.available() > 0 ){
-      char r = Serial.read();
+  //     if (r == 10000001){
+  //       while(1){
+  //         r = Serial.read();
 
-      if (r == 10000001){
-        while(1){
-          r = Serial.read();
+  //         if (r == 00000001){
+  //           break;
+  //         }
+  //       }
 
-          if (r == 00000001){
-            break;
-          }
-        }
-
-      }
-
-      
-  } 
+  //     }
+  // } 
 } 
