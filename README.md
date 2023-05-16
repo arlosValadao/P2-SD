@@ -41,7 +41,7 @@ implementação de um protótipo de sistema de sensoriamento genérico. Na fase 
 O sistema será comandado por um Single Board Computer (SBC), e deve ser capaz de controlar o acionamento de um conjunto variável de sensores, assim como monitorar o seu funcionamento, de forma automatizada. Cada operação de leitura ou monitoramento deve ser representada por um código. Dessa forma, o sistema embarcado na NodeMCU deve ser capaz de interpretá-los e realizá-los de maneira adequada, por meio de uma comunicação UART.
 
 
-### Descrição da solução:
+### Requisitos da solução:
 * O código deverá ser escrito em linguagem C;
 * Capacidade de interligação com até 32 unidades de sensoriamento;
 * Mecanismo de controle de status de funcionamento das unidades;
