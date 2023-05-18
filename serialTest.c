@@ -128,6 +128,7 @@ int main() {
     //unsigned char analogBytes[2];
     //unsigned char followCommands[] = { 0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6 };
     char monitoringLabels[3][10] = { {"D0"}, {"D1"}, {"A0"} };
+    char monitoringLabels2[3][10] = { {"A0"}, {"D0"}, {"D1"} };
     unsigned char monitoringArray[] = { 0xC3, 0xC5, 0xC1 };
     unsigned char consultCommands[] = { 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7 };
     unsigned char selectNode[] = {
@@ -189,6 +190,8 @@ int main() {
         }
     }
     sprintf(vetor_menu01[availableUnits], "Monitor All");
+    availableUnits++;
+    sprintf(vetor_menu01[availableUnits], "Sair");
    
     // sprintf(vetor_menu01[availableUnits], "Exit");
 
@@ -216,7 +219,7 @@ int main() {
             // Verificar se o que vai ser mostrado é o menu 1 ou 2
             if (meun1Active) {
                 // Se posição passar da quantidade de itens do menu, levar para a posição zero do menu
-                refreshPos(&index, availableUnits);
+                refreshPos(&index, availableUnits + 1);
                 // lcdClear(lcdfd);
                 // lcdPrintf(lcdfd, "%s", vetor_menu01[index]);
                 lcdddPuts(lcdfd, vetor_menu01[index], 0);
@@ -242,7 +245,7 @@ int main() {
                 //     index = qtdItensMenu01 - 1;
                 // }
                 // mostrar_menu_01(vetor_menu01, index);
-                refreshPos(&index, availableUnits);
+                refreshPos(&index, availableUnits + 1);
                 // lcdClear(lcdfd);
                 // lcdPrintf(lcdfd, "%s", vetor_menu01[index]);
                 lcdddPuts(lcdfd, vetor_menu01[index], 0);
@@ -268,28 +271,34 @@ int main() {
                 if (choiceMenu1 == EXIT) {
                     lcdddPuts(lcdfd, ":[", 0);
                     break;
-                }else if (choiceMenu1 = availableUnits){ // Monitorar tudo em todas as nodes
-                    idxMonitoring = 0;
+
+                }else if (choiceMenu1 == availableUnits - 1){ // Monitorar tudo em todas as nodes
                     printf("VOCE DECIDIU MONITORAR TODAS AS UNIDADES\n");
                     while(digitalRead(BUTTON_DOWN)) {
-                        //  Selecionar a node
-                        for (int i = 0; i < availableUnits; i++){
-                            recvData;
+                        idxMonitoring = 0;
+                        for (int i = 0; i < availableUnits - 1; i++){
+                            lcdddPuts(lcdfd, "Selecting Unit...", TWO_SECONDS);
                             sendData(uartfd, selectNode, i);
                             recvData = recvDigitalData(uartfd);
-                            lcdddPuts(lcdfd, "NODE %d " i + 1, 0);
-                            delay(10);
-                            lcdClear(lcdfd);
+                            lcdddPuts(lcdfd, "NODE SELECTED", TWO_SECONDS);
                             // Verificar estado dos Pinos
-                            for(int j = 0; j < 3; j++){
-                                sendData(uartfd, monitoringArray, j);
-                                if(j == 2) recvData = recvAnalogData(uartfd);
+                            idxMonitoring = 0;
+                            while(digitalRead(BUTTON_DOWN)) {
+                                recvData = recvDigitalData(uartfd);
+                                lcdClear(lcdfd);
+                                sendData(uartfd, monitoringArray, idxMonitoring);
+                                if(idxMonitoring == 2) recvData = recvAnalogData(uartfd);
                                 else recvData = recvDigitalData(uartfd);
-                                lcdPrintf(lcdfd, "Value %s: %d ", monitoringLabels[j], recvData);
+                                printf("IDX -> %d\n", idxMonitoring);
+                                lcdPrintf(lcdfd, "Value %s: %d", monitoringLabels[idxMonitoring], recvData);
+                                lcdPosition(lcdfd, 0, 1);
+                                lcdPuts(lcdfd, "<ENTER TO EXIT>");
                                 delay(1000);
+                                if (idxMonitoring == 2) break; 
+                                idxMonitoring++;
                             }
                             // Tirar seleção da node
-                            lcdddPuts(lcdfd, "Deselecting the unit...", 1);
+                            lcdddPuts(lcdfd, "Deselecting the unit...", TWO_SECONDS);
                             sendData(uartfd, deselectNode, i);
                             recvData = recvDigitalData(uartfd);
                             printf("DESELECT RECV DATA -> %d\n", recvData);
@@ -372,7 +381,7 @@ int main() {
                              else recvData = recvDigitalData(uartfd);
                              printf("IDX -> %d\n", idxMonitoring);
                              idxMonitoring == 2 ? (idxMonitoring = 0) : idxMonitoring++; 
-                             lcdPrintf(lcdfd, "Value %s: %d", monitoringLabels[idxMonitoring], recvData);
+                             lcdPrintf(lcdfd, "Value %s: %d", monitoringLabels2[idxMonitoring], recvData);
                              lcdPosition(lcdfd, 0, 1);
                              lcdPuts(lcdfd, "<ENTER TO EXIT>");
                              delay(1000);
@@ -451,3 +460,5 @@ int main() {
     }
     return EXIT_SUCCESS;
 }
+
+
