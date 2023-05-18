@@ -22,7 +22,7 @@
 #define SIZE_MENU_1 33
 #define SIZE_MENU_2 9
 #define TURN_BACK (SIZE_MENU_2 - 1)
-#define EXIT      32
+#define EXIT      availableUnits
 #define TWO_SECONDS 2000
 #define ANALOG_PIN index == 1
 #define MONITORING_ANALOG index == 2
@@ -34,7 +34,6 @@
 #define CONSULT     index % 2
 #define MONITORING !(CONSULT)
 
-// Envia a informacao com base no vetor e index passadas
 void sendData(int fd, unsigned char* array, unsigned char pos) {
     serialPutchar(fd, array[pos]);
     delay(2);
@@ -55,20 +54,6 @@ int recvDigitalData(int fd) {
     return -1;
 }
 
-// int receberDadoUART(int fd) {
-//     if (serialDataAvail(fd)){
-//       int inteiro = serialGetchar(fd); // Leitura do byte da porta UART
-//       delay(2);
-//       int resto = serialGetchar(fd); // Leitura do byte da porta UART
-//       int retorno = (inteiro * 10) + resto;
-//       printf("Inteiro: %d\n", inteiro);
-//       printf("Resto: %d\n", resto);
-//       return retorno;
-//     }else{
-//         return -1;
-//     }
-// }
-
 int reachUnit(int fd, char *str, unsigned char *select, unsigned char *deselect, int unitId) {
     int recvData;
     sendData(fd, select, unitId);
@@ -82,8 +67,6 @@ int reachUnit(int fd, char *str, unsigned char *select, unsigned char *deselect,
     return 0;
 }
 
-// Converte os dois bytes provenientes do sensor analogico da node
-// em inteiro
 int bytes2int(int fd) {
     if(serialDataAvail(fd) > 0) {
         int quocient = serialGetchar(fd);
@@ -94,8 +77,6 @@ int bytes2int(int fd) {
     return -1;
 }
 
-
-// Implementa o timeout
 int recvAnalogData(int fd) {
     int analogData = bytes2int(fd);
     if(analogData > -1) return analogData;
@@ -105,11 +86,6 @@ int recvAnalogData(int fd) {
     return analogData; // -1
 }
 
-
-int recvdData(int fd, unsigned char* analogBytes, int pos, int menu) {
-    // Sensor Analogico
-    return recvDigitalData(fd);
-}
 
 void refreshPos(int* pos, signed short size) {
     if (*pos < 0) *pos = size - 1;
@@ -134,16 +110,12 @@ int main() {
     int uartfd;
     // Guarda o indice da node selecionada
     int selectedNode;
-    // Guarda os bytes provenientes do sensor analogico da Node
     // Menu ativo no momento
     int meun1Active = TRUE;
     int menu2Active = FALSE;
 
-    //int counter = 10;
-    //int sum = 0;
     int availableUnits = 0;
 
-    //
     int choiceMenu1;
     int choiceMenu2;
 
@@ -155,7 +127,7 @@ int main() {
 
     //unsigned char analogBytes[2];
     //unsigned char followCommands[] = { 0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6 };
-    char monitoringLabels[3][10] = { {"D0"}, {"D1"}, {"Anal."} };
+    char monitoringLabels[3][10] = { {"D0"}, {"D1"}, {"A0"} };
     unsigned char monitoringArray[] = { 0xC3, 0xC5, 0xC1 };
     unsigned char consultCommands[] = { 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7 };
     unsigned char selectNode[] = {
@@ -167,7 +139,7 @@ int main() {
                                         0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F
                                     };
     // Menus
-    char vetor_menu01[SIZE_MENU_1][30] = { {"SELECIONAR NODE 1"} };
+    char vetor_menu01[SIZE_MENU_1][30];
     char vetor_menu02[SIZE_MENU_2][30] = {
                                             {"Turn on LED"},
                                             {"Query A0"},
@@ -217,6 +189,7 @@ int main() {
     //         availableUnits++;
     //     }
     // }
+    // sprintf(vetor_menu01[availableUnits], "Exit");
 
     // MOSTRAR NODES CONECTADAS
     // for(int i=0; i < availableUnits; i++) printf("[%d] -> %s\n", i, vetor_menu01[i]);
@@ -224,10 +197,6 @@ int main() {
 
     // for(int i=0; i < availableUnits; i++) printf("[%d] -> %u\n", i, consultCommands[i]);
     // return 0;
-
-    // //mostrar_menu_01(vetor_menu01, index);
-    // lcdClear(lcdfd);
-    // lcdPrintf(lcdfd, "%s", vetor_menu01[index]);
 
     lcdddPuts(lcdfd, vetor_menu01[index], 0);
     while(TRUE){
@@ -246,7 +215,7 @@ int main() {
             // Verificar se o que vai ser mostrado é o menu 1 ou 2
             if (meun1Active) {
                 // Se posição passar da quantidade de itens do menu, levar para a posição zero do menu
-                refreshPos(&index, SIZE_MENU_1);
+                refreshPos(&index, availableUnits);
                 // lcdClear(lcdfd);
                 // lcdPrintf(lcdfd, "%s", vetor_menu01[index]);
                 lcdddPuts(lcdfd, vetor_menu01[index], 0);
@@ -272,7 +241,7 @@ int main() {
                 //     index = qtdItensMenu01 - 1;
                 // }
                 // mostrar_menu_01(vetor_menu01, index);
-                refreshPos(&index, SIZE_MENU_1);
+                refreshPos(&index, availableUnits);
                 // lcdClear(lcdfd);
                 // lcdPrintf(lcdfd, "%s", vetor_menu01[index]);
                 lcdddPuts(lcdfd, vetor_menu01[index], 0);
@@ -296,16 +265,10 @@ int main() {
                 // Verificar se apertou enter na posição Sair
                 choiceMenu1 = index;
                 if (choiceMenu1 == EXIT) {
-					// lcdClear(lcdfd);
-                    // lcdPuts(lcdfd, "TCHAU...");
-                    // delay(3000);
-                    lcdddPuts(lcdfd, "Bye...", 0);
+                    lcdddPuts(lcdfd, ":[", 0);
                     break;
                 }
                 else {
-                    // lcdClear(lcdfd);
-                    // lcdPrintf(lcdfd, "SELECIONANDO A UNIDADE %d...", index+1);
-                    // delay(3000);
                     lcdddPuts(lcdfd, "Selecting Unit...", TWO_SECONDS);
                     // Seleciona a Node com o ID escolhido
                     sendData(uartfd, selectNode, index);
