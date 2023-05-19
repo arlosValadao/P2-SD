@@ -19,7 +19,7 @@
 #define BUTTON_UP  23         // PA10
 #define BUTTON_ENTER  19         // PA20
 
-#define SIZE_MENU_1 33
+#define SIZE_MENU_1 34
 #define SIZE_MENU_2 9
 #define TURN_BACK (SIZE_MENU_2 - 1)
 #define EXIT      availableUnits
@@ -33,6 +33,8 @@
 
 #define CONSULT     index % 2
 #define MONITORING !(CONSULT)
+#define MAX_UNITS 32
+
 
 void sendData(int fd, unsigned char* array, unsigned char pos) {
     serialPutchar(fd, array[pos]);
@@ -131,13 +133,17 @@ int main() {
     char monitoringLabels2[3][10] = { {"A0"}, {"D0"}, {"D1"} };
     unsigned char monitoringArray[] = { 0xC3, 0xC5, 0xC1 };
     unsigned char consultCommands[] = { 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7 };
-    unsigned char selectNode[] = {
+    unsigned char selectNode[MAX_UNITS] = {
                                         0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
-                                        0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0x10
+                                        0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF ,0x10, 0x11,
+                                        0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
+                                        0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
                                     };
-    unsigned char deselectNode[] = {   
+    unsigned char deselectNode[MAX_UNITS] = {   
                                         0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
-                                        0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F
+                                        0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F,
+                                        0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
+                                        0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F, 0xA0
                                     };
     // Menus
     char vetor_menu01[SIZE_MENU_1][30];
@@ -182,13 +188,35 @@ int main() {
     //lcdClear(lcdfd);
 
     // DESCOBRINDO UNIDADES ONLINES
-    for(int i = 0; i < 16; i++) {
-        recvData = reachUnit(uartfd, vetor_menu01[availableUnits], selectNode, deselectNode, availableUnits);
+    for(int i = 0; i < MAX_UNITS; i++) {
+        recvData = reachUnit(uartfd, vetor_menu01[i], selectNode, deselectNode, i);
         if(recvData > 0) {
-            consultCommands[availableUnits] = (0xC0 + availableUnits);
             availableUnits++;
+        }else{
+            selectNode[i] = -1;
+            deselectNode[i] = -1;
+            vetor_menu01[i][0] = '\0';
         }
     }
+    int cont = 0;
+    int cont2 = 0;
+    int cont3 = 0;
+    for (int i = 0; i < MAX_UNITS; i++){
+        if(selectNode[i] < 255){
+            selectNode[cont] = selectNode[i];
+            cont++;
+        }
+        if(deselectNode[i] < 255){
+            deselectNode[cont2] = deselectNode[i];
+            cont2++;
+        }
+        if(vetor_menu01[i][0] != '\0'){
+            strcpy(vetor_menu01[cont3], vetor_menu01[i]);
+            cont3++;
+        }
+    }
+
+
     sprintf(vetor_menu01[availableUnits], "Monitor All");
     availableUnits++;
     sprintf(vetor_menu01[availableUnits], "Sair");
@@ -284,7 +312,8 @@ int main() {
                             // Verificar estado dos Pinos
                             idxMonitoring = 0;
                             while(digitalRead(BUTTON_DOWN)) {
-                                recvData = recvDigitalData(uartfd);
+                                serialFlush(uartfd);
+                                //recvData = recvDigitalData(uartfd);
                                 lcdClear(lcdfd);
                                 sendData(uartfd, monitoringArray, idxMonitoring);
                                 if(idxMonitoring == 2) recvData = recvAnalogData(uartfd);
@@ -298,7 +327,7 @@ int main() {
                                 idxMonitoring++;
                             }
                             // Tirar seleção da node
-                            lcdddPuts(lcdfd, "Deselecting the unit...", TWO_SECONDS);
+                            //lcdddPuts(lcdfd, "Deselecting the unit...", TWO_SECONDS);
                             sendData(uartfd, deselectNode, i);
                             recvData = recvDigitalData(uartfd);
                             printf("DESELECT RECV DATA -> %d\n", recvData);
@@ -308,7 +337,8 @@ int main() {
                     //  lcdPuts(lcdfd, "SAINDO DO MONITORAMENTO");
                     //  delay(1000);
                     while(!digitalRead(BUTTON_DOWN));
-                    lcdddPuts(lcdfd, vetor_menu02[index], 0);
+                    lcdddPuts(lcdfd, vetor_menu01[index], 0);
+                    continue;
                 }
                 else {
                     lcdddPuts(lcdfd, "Selecting Unit...", TWO_SECONDS);
@@ -460,5 +490,3 @@ int main() {
     }
     return EXIT_SUCCESS;
 }
-
-
