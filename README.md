@@ -17,13 +17,13 @@
 
 &nbsp;&nbsp;&nbsp;[**3.** Softwares Utilizados](#softwares_utilizados)
 
-<!-- (&nbsp;&nbsp;&nbsp;[**4.** Descrição da Solução](#descricao_solucao)) -->
+(&nbsp;&nbsp;&nbsp;[**4.** Descrição da Solução](#descricao_solucao))
 
 <!-- &nbsp;&nbsp;&nbsp;[**5.** Testes realizados](#testes_realizados) -->
 
 <!-- &nbsp;&nbsp;&nbsp;[**6.** Limitações da solução desenvolvida](#limitacoes) -->
 
-&nbsp;&nbsp;&nbsp;[**4.** Documentação Utilizada](#documentacao)
+&nbsp;&nbsp;&nbsp;[**5.** Documentação Utilizada](#documentacao)
 
 <!-- &nbsp;&nbsp;&nbsp;[**5.** Execução do Projeto](#execucao_projeto) -->
 
@@ -126,6 +126,111 @@ O objetivo principal do GCC é traduzir o código-fonte de um programa em lingua
 Além disso é distribuído sob a Licença Pública Geral GNU (GNU GPL), o que significa que seu código-fonte está disponível para modificação e redistribuição livremente. Essa abordagem de código aberto encoraja a colaboração e o aprimoramento contínuo da ferramenta por uma comunidade global de desenvolvedores.
 
 [Arduino IDE](https://www.arduino.cc/en/software): Arduino IDE é um ambiente de desenvolvimento integrado (IDE) que oferece suporte à programação de placas Arduino. É uma plataforma de software de código aberto, fácil de usar e compatível com várias plataformas. Com o Arduino IDE, os usuários podem escrever, compilar e fazer upload de código para suas placas Arduino, permitindo a criação de projetos interativos e dispositivos eletrônicos personalizados de maneira rápida e simples.
+
+## Descrição da solução:
+
+Os conceitos principais que envolvem a solução foram:
+
+1) Realizar comunicação entre a placa SBC e a Node-MCU
+
+
+Antes de mais nada é necessário habilitar e configurar os pinos da Orange PI que estavam diretamente conectados a placa NodeMCU, para isso recorremos ao manual disponibilizado em [link oficial](https://drive.google.com/drive/folders/1tOkewb8F1kN7q0qqOmISZmUP7ZwhRRLB) para ativar os pinos TXD0 e RXD0 da placa conforme esquematizado abaixo.
+![uarttx3](https://github.com/arlosValadao/P2-SD/assets/42982873/8fc647e7-e0dc-4036-b808-21395c561e47)
+
+Para isso é necessário alterar o arquivo `/boot/orangepiEnv.txt` e inserir e digitar:
+`overlays=uart1 uart2 uart3`
+Após isso, reiniciar o sistema.
+
+2) Desenvolver um protocolo capaz de cumprir os requisitos 
+
+<b>Tabela para seleção de unidades:</b>
+| Código | Descrição do Comando |
+|:--- |                                   ---: |
+| 0x1 | Selecionar Unidade 1 |
+| 0x2 | Selecionar Unidade 2 |
+| 0x3 | Selecionar Unidade 3 |
+| 0x4 | Selecionar Unidade 4 |
+| 0x5 | Selecionar Unidade 5 |
+| 0x6 | Selecionar Unidade 6 |
+| 0x7 | Selecionar Unidade 7 |
+| 0x8 | Selecionar Unidade 8 |
+| 0x9 | Selecionar Unidade 9 |
+| 0xA | Selecionar Unidade 10 |
+| 0xB | Selecionar Unidade 11 |
+| 0xC | Selecionar Unidade 12 |
+| 0xD | Selecionar Unidade 13 |
+| 0xE | Selecionar Unidade 14 |
+| 0xF | Selecionar Unidade 15 |
+| 0x10 | Selecionar Unidade 16 |
+| ... | ... |
+| 0x1F | Selecionar Unidade 31 |
+
+<b>Tabela para desselecionar unidades</b>
+| Código | Descrição do Comando |
+|:--- |                                   ---: |
+| 0x81 | Desselecionar Unidade 1 |
+| 0x82 | Desselecionar Unidade 2 |
+| 0x83 | Desselecionar Unidade 3 |
+| 0x84 | Desselecionar Unidade 4 |
+| 0x85 | Desselecionar Unidade 5 |
+| 0x86 | Desselecionar Unidade 6 |
+| 0x87 | Desselecionar Unidade 7 |
+| 0x88 | Desselecionar Unidade 8 |
+| 0x89 | Desselecionar Unidade 9 |
+| 0x8A | Desselecionar Unidade 10 |
+| 0x8B | Desselecionar Unidade 11 |
+| 0x8C | Desselecionar Unidade 12 |
+| 0x8D | Desselecionar Unidade 13 |
+| 0x8E | Desselecionar Unidade 14 |
+| 0x8F | Desselecionar Unidade 15 |
+| ... | ... |
+| 0x9F | Desselecionar Unidade 31 |
+
+<b>Tabela contendo respostas para seleção de unidade</b>
+
+| Código | Descrição do Comando |
+|:--- |                                   ---: |
+| 0x1 | Selecionada Unidade 1 |
+| 0x2 | Selecionada Unidade 2 |
+| 0x3 | Selecionada Unidade 3 |
+| 0x4 | Selecionada Unidade 4 |
+| 0x5 | Selecionada Unidade 5 |
+| 0x6 | Selecionada Unidade 6 |
+| 0x7 | Selecionada Unidade 7 |
+| 0x8 | Selecionada Unidade 8 |
+| 0x9 | Selecionada Unidade 9 |
+| 0xA | Selecionada Unidade 10 |
+| 0xB | Selecionada Unidade 11 |
+| 0xC | Selecionada Unidade 12 |
+| 0xD | Selecionada Unidade 13 |
+| 0xE | Selecionada Unidade 14 |
+| 0xF | Selecionada Unidade 15 |
+| 0x10| Selecionada Unidade 16 |
+| ... | ... |
+| 0x1F| Selecionada Unidade 31 |
+
+<b> Tabela contendo respostas para desseleção de unidade </b>
+
+| Código | Descrição do Comando |
+|:--- |                                   ---: |
+| 0x80 | Desselecionada Unidade 0 |
+| 0x81 | Desselecionada Unidade 1 |
+| 0x82 | Desselecionada Unidade 2 |
+| 0x83 | Desselecionada Unidade 3 |
+| 0x84 | Desselecionada Unidade 4 |
+| 0x85 | Desselecionada Unidade 5 |
+| 0x86 | Desselecionada Unidade 6 |
+| 0x87 | Desselecionada Unidade 7 |
+| 0x88 | Desselecionada Unidade 8 |
+| 0x89 | Desselecionada Unidade 9 |
+| 0x8A | Desselecionada Unidade 10 |
+| 0x8B | Desselecionada Unidade 11 |
+| 0x8C | Desselecionada Unidade 12 |
+| 0x8D | Desselecionada Unidade 13 |
+| 0x8E | Desselecionada Unidade 14 |
+| 0x8F | Desselecionada Unidade 15 |
+| ... | ... |
+| 0x9F| Desselecionada Unidade 31 |
 
 # <a id="documentacao"></a>
 ## Documentação utilizada:
