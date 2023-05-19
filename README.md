@@ -17,15 +17,15 @@
 
 &nbsp;&nbsp;&nbsp;[**3.** Softwares Utilizados](#softwares_utilizados)
 
-&nbsp;&nbsp;&nbsp;[**4.** Descrição da Solução](#descricao_solucao)
+<!-- (&nbsp;&nbsp;&nbsp;[**4.** Descrição da Solução](#descricao_solucao)) -->
 
-&nbsp;&nbsp;&nbsp;[**5.** Testes realizados](#testes_realizados)
+<!-- &nbsp;&nbsp;&nbsp;[**5.** Testes realizados](#testes_realizados) -->
 
-&nbsp;&nbsp;&nbsp;[**6.** Limitações da solução desenvolvida](#limitacoes)
+<!-- &nbsp;&nbsp;&nbsp;[**6.** Limitações da solução desenvolvida](#limitacoes) -->
 
-&nbsp;&nbsp;&nbsp;[**7.** Documentação Utilizada](#documentacao)
+&nbsp;&nbsp;&nbsp;[**4.** Documentação Utilizada](#documentacao)
 
-&nbsp;&nbsp;&nbsp;[**8.** Execução do Projeto](#execucao_projeto)
+<!-- &nbsp;&nbsp;&nbsp;[**5.** Execução do Projeto](#execucao_projeto) -->
 
 
 # <a id="introducao"></a>
@@ -72,15 +72,51 @@ Tabela 2: Exemplos de resposta
 
 
 # <a id="hardware_utilizado"></a>
-## Hardware utilizado
-Existem dois hardwares sendo utilizados.
+## Hardwares utilizados
+
 
 * Orange PI PC Plus, com 40 pinos GPIO e um processador H3 Quad-core Cortex-A7 H.265/HEVC 4K com arquitetura ARM V7, contendo o sistema operacional Raspbian com Kernel proprietário e em sua versão 5.15.74-sunxi.
-   
+
+![Orange_Pi_H3_Pinout jpg 08b35c4e663edbc02a044174a5a154cc](https://github.com/arlosValadao/P2-SD/assets/42982873/c32a02e5-c406-4518-98eb-0bfc1137b4b8)
+
+Especificações técnicas:
+
+| CPU | H3 Quad-core Cortex-A7 H.265/HEVC 4K   |
+|:--- |                                   ---: |
+| GPU |     Mali400MP2 GPU @600MHz             |
+| Memória (SDRAM) |  1GB DDR3 (shared with GPU)|
+| Armazenamento interno | Cartão MicroSD (32 GB); 8GB eMMC Flash|
+| Rede embarcada | 10/100 Ethernet RJ45        |
+| Fonte de alimentação | Entrada DC,<br>entradas USB e OTG não servem como fonte de alimentação | 
+| Portas USB | 3 Portas USB 2.0, uma porta OTG USB 2.0 |
+| Periféricos de baixo nível | 40 pinos        |
+
+
 * NodeMCU (Unidade microcontroladora Node) é um ambiente de desenvolvimento de hardware/software open source feito com base no SoC(System on a Chip) chamado ESP8266. 
 
+![pinout-NodeMCU](https://github.com/arlosValadao/P2-SD/assets/42982873/6e4ff7be-0855-499e-b0e0-9da7034c6909)
+
+Especificações técnicas:
+
+* Memória flash: 4 MB
+* Tensão de operação:
+* Pinos Digitais: 3,3 V
+* Pino Analógico: 1,0 V
+* Wireless padrão 802.11 b/g/n
+* Antena embutida
+* Conector micro-usb para programação e alimentação
+* Modos de operação: STA/AP/STA+AP
+* Suporta 5 conexões TCP/IP
+* Portas GPIO: 13
+* D0 (GPIO16) só pode ser usado como entrada ou saída, não suporta outras funções (interrupção, PWM, I2C, etc)
+* GPIO com funções de PWM, I2C, SPI, etc
+* Resolução do PWM: 10 bits (valores de 0 a 1023)
+* 01x Conversor analógico digital (ADC)
+* Dimensões: 49 x 26 x 7 mm (sem considerar os pinos)
+
+
 # <a id="softwares_utilizados"></a>
-## Software utilizado
+## Softwares utilizados
 [GCC](https://gcc.gnu.org/): O GCC, ou GNU Compiler Collection, é um conjunto de compiladores de código aberto desenvolvido pelo Projeto GNU. Ele é amplamente utilizado no desenvolvimento de software para compilar programas escritos em várias linguagens de programação, incluindo C, C++, Fortran, Ada e outros.
 
 O GCC é uma poderosa coleção de compiladores de código aberto amplamente utilizada no desenvolvimento de software. Sua flexibilidade, portabilidade e recursos avançados tornam-no uma escolha popular para compilar programas em várias linguagens de programação e plataformas.
@@ -100,6 +136,5 @@ Ficha técnica do ESP8266 NodeMCU, uma placa de desenvolvimento baseada no módu
 
 [Datasheet do display LCD](https://www.sparkfun.com/datasheets/LCD/HD44780.pdf): Como citado anteriormente, o modelo do display LCD é o Hitachi HD44780U, e sua documentação nos permite descobrir o algoritmo responsável pela inicialização do display bem como o tempo de execução de cada instrução, além da representação de cada caractere em forma de número binário
 
-[Tabela de syscalls do Linux 32 bits para ARM](https://chromium.googlesource.com/chromiumos/docs/+/master/constants/syscalls.md#arm-32_bit_EABI): Documentação contendo tabela de chamadas ao sistema operacional como chamadas de nanoSleep, ou de escrita para serem executadas
-
 [Comunicação UART, material da Universidade de Salento](https://www.unisalento.it/documents/20152/804790/SLIDES+LEZIONE+7-2+INTRODUCTION+TO+UART+COMMUNICATION.pdf/bf04aaf1-3b89-50ee-e1a5-05bda9c59fd3?version=1.0&download=true): Documento contendo introdução sobre comunicações UART, elaborando conceitos como Baud Rate e mostra em detalhes passo a passo de como funciona a transmissão de bits via UART.
+
