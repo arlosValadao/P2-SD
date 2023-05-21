@@ -131,8 +131,7 @@ Além disso é distribuído sob a Licença Pública Geral GNU (GNU GPL), o que s
 
 Os conceitos principais que envolvem a solução foram:
 
-1) Realizar comunicação entre a placa SBC e a Node-MCU
-
+1) Realizar comunicação entre a placa SBC e a Node-MCU usando protocolo UART
 
 Antes de mais nada é necessário habilitar e configurar os pinos da Orange PI que estavam diretamente conectados a placa NodeMCU, para isso recorremos ao manual disponibilizado em [link oficial](https://drive.google.com/drive/folders/1tOkewb8F1kN7q0qqOmISZmUP7ZwhRRLB) para ativar os pinos TXD0 e RXD0 da placa conforme esquematizado abaixo.
 ![uarttx3](https://github.com/arlosValadao/P2-SD/assets/42982873/8fc647e7-e0dc-4036-b808-21395c561e47)
@@ -231,6 +230,55 @@ Após isso, reiniciar o sistema.
 | 0x8F | Desselecionada Unidade 15 |
 | ... | ... |
 | 0x9F| Desselecionada Unidade 31 |
+
+Abaixo alguns trechos de código que podem auxiliar no entendimento da solução:
+
+  * Integração entre protocolo e SBC usando protoboard:
+
+Tudo isso devia ser feito de modo interativo através dos botões disponibilizados na protoboard, sendo assim foram criadas variáveis nas formas de vetores que pudessem representar as diversas requisições/respostas possíveis:
+
+```
+char monitoringLabels[3][10] = { {"D0"}, {"D1"}, {"A0"} };
+char monitoringLabels2[3][10] = { {"A0"}, {"D0"}, {"D1"} };
+unsigned char monitoringArray[] = { 0xC3, 0xC5, 0xC1 };
+unsigned char consultCommands[] = { 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7 };
+unsigned char selectNode[MAX_UNITS] = {
+  0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+  0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF ,0x10, 0x11,
+  0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
+  0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
+  };
+unsigned char deselectNode[MAX_UNITS] = {   
+  0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
+  0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F,
+  0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
+  0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F, 0xA0
+  };
+```
+
+  * Usando a biblioteca [wiringpi](http://wiringpi.com/), podemos ainda declarar o modo dos botões na protoboard como entrada:
+
+```
+  pinMode(BUTTON_DOWN, INPUT);
+  pinMode(BUTTON_UP, INPUT);
+  pinMode(BUTTON_ENTER, INPUT);
+```
+
+  * PARSING E ENVIO DOS DADOS ANALÓGICOS:
+Como o dado a ser lido é de 10 bits, e o núm. máximo de bits a ser enviado é de 8, então foi feita uma divisão por 10 do valor lido pelo pino analógico (A0) e após isso enviado em dois pacotes os valores quociente e resto, após serem enviados os valores são unidos novamente na placa SBC.
+
+```
+case(0xC1):
+  analogData = analogRead(A0);
+  quocient = analogData / 10;
+  rest = analogData % 10;
+  Serial.write(quocient);
+  delay(2);
+  Serial.write(rest);
+  break;
+```
+Trecho de código de parsing e envio na NodeMCU
+
 
 # <a id="documentacao"></a>
 ## Documentação utilizada:
