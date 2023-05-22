@@ -409,6 +409,10 @@ Ficha técnica do ESP8266 NodeMCU, uma placa de desenvolvimento baseada no módu
 
 
 # Testes
+
+Antes de começar os testes, vamos esclarecer qual o mapeamento dos botões
+![uarttx3](https://raw.githubusercontent.com/arlosValadao/P2-SD/main/src/testes/Mapear%20bot%C3%B5es.png)
+
 A seguir estão alguns testes que foram feitos para demonstração do sistema.
 
 * Passo a Passo para selecionar o sensor digital D1
