@@ -23,7 +23,7 @@
 
 <!-- &nbsp;&nbsp;&nbsp;[**6.** Limitações da solução desenvolvida](#limitacoes) -->
 
-&nbsp;&nbsp;&nbsp;[**5.** Casos de Teste](#Casos_de_Teste)
+&nbsp;&nbsp;&nbsp;[**5.** Casos de Teste](#testes)
 
 &nbsp;&nbsp;&nbsp;[**6.** Documentação Utilizada](#documentacao)
 
@@ -411,7 +411,7 @@ Ficha técnica do ESP8266 NodeMCU, uma placa de desenvolvimento baseada no módu
  Foi desenvolvido um software funcional que cumpre todos os requesitos do problema e está sendo executado de forma satisfatoria. Contudo os
  comandos poderiam ser otimizados de forma a utilizar os bits enviados à NodeMCU de forma eficiente.
 
-# <a id="Casos_de_Teste"></a>
+# <a id="testes"></a>
 ## Casos de Teste
 
 A seguir estão alguns testes que foram feitos para demonstração do sistema.
