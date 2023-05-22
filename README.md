@@ -398,3 +398,34 @@ Ficha técnica do ESP8266 NodeMCU, uma placa de desenvolvimento baseada no módu
 [Comunicação UART, material da Universidade de Salento](https://www.unisalento.it/documents/20152/804790/SLIDES+LEZIONE+7-2+INTRODUCTION+TO+UART+COMMUNICATION.pdf/bf04aaf1-3b89-50ee-e1a5-05bda9c59fd3?version=1.0&download=true): Documento contendo introdução sobre comunicações UART, elaborando conceitos como Baud Rate e mostra em detalhes passo a passo de como funciona a transmissão de bits via UART.
 
 # Resultados
+ Como resultado final obtivemos um software funcional que cumpre todos os requesitos do problema e está sendo executado de forma satisfatoria, segue algumas fotos do sistema.
+* Algumas telas do Menu (Menu 1 e Menu 2)
+ 
+* Algumas telas com o retorno dos dados digitais
+ 
+* Tela com retorno do dado Analogico 
+
+* Diagramna do sistema final.
+
+
+# Testes
+A seguir estão alguns testes que foram feitos para demonstração do sistema.
+
+* Passo a Passo para selecionar o sensor digital D1
+
+* Passo a Passo para selecionar o sensor digital D0
+
+* Passo a Passo para selecionar o sensor analogico A0
+
+* Passo a Passo para monitorar todos os sensores da mesma Unidade
+
+* Passo a Passo para monitorar todas os sensores de todas as unidades
+
+
+# Conclusão
+
+
+
+
+
+
