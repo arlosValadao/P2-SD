@@ -131,6 +131,7 @@ Além disso é distribuído sob a Licença Pública Geral GNU (GNU GPL), o que s
 
 [Arduino IDE](https://www.arduino.cc/en/software): Arduino IDE é um ambiente de desenvolvimento integrado (IDE) que oferece suporte à programação de placas Arduino. É uma plataforma de software de código aberto, fácil de usar e compatível com várias plataformas. Com o Arduino IDE, os usuários podem escrever, compilar e fazer upload de código para suas placas Arduino, permitindo a criação de projetos interativos e dispositivos eletrônicos personalizados de maneira rápida e simples.
 
+<a id=descricao_solucao></a>
 ## Descrição da solução:
 
 Os conceitos principais que envolvem a solução foram:
