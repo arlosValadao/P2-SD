@@ -23,7 +23,7 @@
 
 <!-- &nbsp;&nbsp;&nbsp;[**6.** Limitações da solução desenvolvida](#limitacoes) -->
 
-&nbsp;&nbsp;&nbsp;[**5.** Casos de Teste](#casos_de_teste)
+&nbsp;&nbsp;&nbsp;[**5.** Casos de Teste](#Casos de Teste)
 
 &nbsp;&nbsp;&nbsp;[**6.** Documentação Utilizada](#documentacao)
 
@@ -34,7 +34,7 @@
 ## Introdução
 
 Este documento apresenta em detalhes o desenvolvimento de um sistema de comunicação serial, assíncrona
-half-duplex, entre os Single Board Computers Orange Pi e ESP8266 (NodeMCU). A comunicação serial UART, sobre este protocolo de comunicação fora elaborada demais regras de comunicação, de tal forma que cada mensagem sempre contém 8 bits de informação. Com o objetivo de realizar a consulta e monitoramento de sensores analógicos e digitais embutidos na unidade de medição ESP8266, utilizou-se a linguagem de programação C e C++, o sistema é capaz de lidar com até 32 unidades de medição de forma concorrente ou não, de tal forma que o protocolo proprietário implementado é capaz de fornecer o status de funcionando das respectivas unidades conectadas. A figura 1 mostra como estão dispostas as unidades de medição em relação à SBC Orange PI PC Plus, de tal forma que toda e qualquer informação proveniente das unidades de medição serão exibidas em um display LCD.
+half-duplex, entre os Single Board Computers Orange Pi e ESP8266 (NodeMCU). Além da comunicação serial UART, sobre este protocolo de comunicação fora elaborada demais regras de comunicação, de tal forma que cada mensagem sempre contém 8 bits de informação. Com o objetivo de realizar a consulta e monitoramento de sensores analógicos e digitais embutidos na unidade de medição ESP8266, utilizou-se a linguagem de programação C e C++, o sistema é capaz de lidar com até 32 unidades de medição de forma concorrente ou não, de tal forma que o protocolo proprietário implementado é capaz de fornecer o status de funcionando das respectivas unidades conectadas. A figura 1 mostra como estão dispostas as unidades de medição em relação à SBC Orange PI PC Plus, de tal forma que toda e qualquer informação proveniente das unidades de medição serão exibidas em um display LCD.
 
 ### Descrição do problema:
 
@@ -408,15 +408,8 @@ Ficha técnica do ESP8266 NodeMCU, uma placa de desenvolvimento baseada no módu
 [Comunicação UART, material da Universidade de Salento](https://www.unisalento.it/documents/20152/804790/SLIDES+LEZIONE+7-2+INTRODUCTION+TO+UART+COMMUNICATION.pdf/bf04aaf1-3b89-50ee-e1a5-05bda9c59fd3?version=1.0&download=true): Documento contendo introdução sobre comunicações UART, elaborando conceitos como Baud Rate e mostra em detalhes passo a passo de como funciona a transmissão de bits via UART.
 
 # Resultados
- Como resultado final obtivemos um software funcional que cumpre todos os requesitos do problema e está sendo executado de forma satisfatoria, segue algumas fotos do sistema.
-* Algumas telas do Menu (Menu 1 e Menu 2)
- 
-* Algumas telas com o retorno dos dados digitais
- 
-* Tela com retorno do dado Analogico 
-
-* Diagramna do sistema final.
-
+ Foi desenvolvido um software funcional que cumpre todos os requesitos do problema e está sendo executado de forma satisfatoria. Contudo os
+ comandos poderiam ser otimizados de forma a utilizar os bits enviados à NodeMCU de forma eficiente.
 
 # <a id="Casos de Teste"></a>
 ## Casos de Teste
@@ -434,10 +427,11 @@ Para que seja possível consultar o status de um sensor digital conectado ao pin
 Uma vez selecionada, é relatado sucesso ao selecionar a unidade no display, logo após, como esperado, é exibido um menu de consulta e monitoramento dos sensores conectados aos pinos A0, D0 e D1, respectivamente.
 Sendo o sensor digital conectado ao pino D0 da ESP8266 um botão de acionamento mecânico em lógica inversa, ou seja este "envia" nivel lógico alto (1) enquanto não pressionado, é esperado que ao realizar a requisição do estado deste pino seja exibido no display LCD 1, como valor do pino D0.
 
-        = VIDEO AQUI (TA EM src) =
+[Consulta D0](https://github.com/arlosValadao/P2-SD/assets/61719667/cdb8bebe-a4c1-492e-9b7b-f25ca7dc266b)
 
 * Consultar todos os sensores de Todas as Unidades Disponíveis
 
 O sistema desenvolvido permite o monitoramento de todos os 3 sensores de todas as nodes, determinando alguns segundos de intervalo entre a exibição dos sensores conectados à uma unidade e às outras unidades, de exibição no display LCD. A opção corresponde ao descrito está disposta no menu principal (primeiro menu), de tal forma que todas as unidades disponíveis são selecionadas, os sesu sensores são exibidos no display LCD e por seguinte esta unidade previamente selecionada é deselecionada, e a próxima unidade disponível é buscada, este ciclo se mantém até que o usuário deseje sair, pressionando o botão ENTER (como descrito acima).
 
-        = VIDEO AQUI (TA EM src) =
+[Monitorar Todas as Unidades de Medição](https://github.com/arlosValadao/P2-SD/assets/61719667/b5186b28-cdf3-46b4-9b44-81b30c473fb2)
+
