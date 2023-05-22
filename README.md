@@ -140,7 +140,7 @@ Antes de mais nada é necessário habilitar e configurar os pinos da Orange PI q
 
 ![uarttx3](https://github.com/arlosValadao/P2-SD/assets/42982873/8fc647e7-e0dc-4036-b808-21395c561e47)
 
-Para isso é necessário alterar o arquivo `/boot/orangepiEnv.txt` e inserir e digitar:
+Para isso é necessário alterar o arquivo `/boot/orangepiEnv.txt` e digitar:
 `overlays=uart1 uart2 uart3`
 Após isso, reiniciar o sistema.
 
