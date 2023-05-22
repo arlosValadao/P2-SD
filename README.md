@@ -51,6 +51,9 @@ O sistema será comandado por um Single Board Computer (SBC), e deve ser capaz d
 * A informação medida deve ter a maior precisão possível;
 * As requisições do SBC podem ser direcionadas para uma unidade específica ou a todas;
 * As solicitações e as respostas deverão ser exibidas no display LCD.
+* A led tem que ser aceso via comando da SBC
+* Fazer requisição dos sensores digitais da ESP (D0 e D1).
+* Fazre requisição do sensor analogico (A0).
 
 Tabela 1: Exemplos de requisição
 
@@ -134,11 +137,119 @@ Os conceitos principais que envolvem a solução foram:
 1) Realizar comunicação entre a placa SBC e a Node-MCU usando protocolo UART
 
 Antes de mais nada é necessário habilitar e configurar os pinos da Orange PI que estavam diretamente conectados a placa NodeMCU, para isso recorremos ao manual disponibilizado em [link oficial](https://drive.google.com/drive/folders/1tOkewb8F1kN7q0qqOmISZmUP7ZwhRRLB) para ativar os pinos TXD0 e RXD0 da placa conforme esquematizado abaixo.
+
 ![uarttx3](https://github.com/arlosValadao/P2-SD/assets/42982873/8fc647e7-e0dc-4036-b808-21395c561e47)
 
 Para isso é necessário alterar o arquivo `/boot/orangepiEnv.txt` e inserir e digitar:
 `overlays=uart1 uart2 uart3`
 Após isso, reiniciar o sistema.
+
+* O código para fazer o controle da UART na Orange, feito usando a biblioteca <wiringSerial.h>
+```
+#define UART_3 "/dev/ttyS3"
+#define BAUD_RATE 9600
+
+if ((fd = serialOpen (UART_3, BAUD_RATE)) < 0){
+        fprintf (stderr, "Unable to open serial device: %s\n", strerror (errno)) ;
+        return 1 ;
+}
+
+void sendData(int fd, unsigned char* array, unsigned char pos) {
+    serialPutchar(fd, array[pos]);
+    delay(2);
+}
+
+//Receber dado digital
+int recvDigitalData(int fd) {
+    if (serialDataAvail(fd) > 0) {
+        printf("CONSEGUIU LER\n");
+        return serialGetchar(fd); 
+    }
+    delay(8);
+    if (serialDataAvail(fd) > 0) {
+        printf("CONSEGUIU LER\n");
+        return serialGetchar(fd); 
+    }
+    printf("NAO CONSEGUIU LER\n");
+    return -1;
+}
+
+// Receber dado analogico
+int recvAnalogData(int fd) {
+    int analogData = bytes2int(fd);
+    if(analogData > -1) return analogData;
+    delay(8);
+    analogData = bytes2int(fd);
+    if(analogData > -1) return analogData;
+    return analogData; // -1
+}
+```
+
+* O código para receber e enviar dados via UART na ESP.
+```
+if(Serial.available() > 0) {
+    recvd = Serial.read();
+}
+
+//Mandar dado digital
+Serial.write(digitalRead(D0));
+
+//Mandar dado analogico
+analogData = analogRead(A0);
+quocient = analogData / 10;
+rest = analogData % 10;
+Serial.write(quocient);
+delay(2);
+Serial.write(rest);
+break;
+```
+
+* Para o desenvolvimento do Menu.
+Primeiro verificamos quatas nodes estão conectadas na porta UART, e dependendo da quantidade montamos um Menu personalizado.
+```
+int reachUnit(int fd, char *str, unsigned char *select, unsigned char *deselect, int unitId) {
+    int recvData;
+    sendData(fd, select, unitId);
+    recvData = recvDigitalData(fd);
+    if(recvData > -1) {
+        sprintf(str, "Select Unit %d", unitId + 1);
+        printf("REACH UNIT\n");
+        return 1;
+    }
+    sendData(fd, deselect, unitId);
+    return 0;
+}
+
+// DESCOBRINDO UNIDADES ONLINES
+for(int i = 0; i < MAX_UNITS; i++) {
+    recvData = reachUnit(uartfd, vetor_menu01[i], selectNode, deselectNode, i);
+    if(recvData > 0) {
+        availableUnits++;
+    }else{
+        selectNode[i] = -1;
+        deselectNode[i] = -1;
+        vetor_menu01[i][0] = '\0';
+    }
+}
+// CONFIGURANDO OS VETORES PARA FICAREM DE ACORDO COM A QUANTIDADE DE NODES ENCONTRADAS NA REDE
+int cont = 0;
+int cont2 = 0;
+int cont3 = 0;
+for (int i = 0; i < MAX_UNITS; i++){
+    if(selectNode[i] < 255){
+        selectNode[cont] = selectNode[i];
+        cont++;
+    }
+    if(deselectNode[i] < 255){
+        deselectNode[cont2] = deselectNode[i];
+        cont2++;
+    }
+    if(vetor_menu01[i][0] != '\0'){
+        strcpy(vetor_menu01[cont3], vetor_menu01[i]);
+        cont3++;
+    }
+}
+```
 
 2) Desenvolver um protocolo capaz de cumprir os requisitos 
 
@@ -163,6 +274,7 @@ Após isso, reiniciar o sistema.
 | 0x10 | Selecionar Unidade 16 |
 | ... | ... |
 | 0x1F | Selecionar Unidade 31 |
+| 0x20 | Selecionar Unidade 32 |
 
 <b>Tabela para desselecionar unidades</b>
 | Código | Descrição do Comando |
@@ -184,6 +296,7 @@ Após isso, reiniciar o sistema.
 | 0x8F | Desselecionar Unidade 15 |
 | ... | ... |
 | 0x9F | Desselecionar Unidade 31 |
+| 0xA0 | Desselecionar Unidade 32 |
 
 <b>Tabela contendo respostas para seleção de unidade</b>
 
@@ -207,6 +320,7 @@ Após isso, reiniciar o sistema.
 | 0x10| Selecionada Unidade 16 |
 | ... | ... |
 | 0x1F| Selecionada Unidade 31 |
+| 0x20| Selecionada Unidade 32 |
 
 <b> Tabela contendo respostas para desseleção de unidade </b>
 
@@ -230,6 +344,7 @@ Após isso, reiniciar o sistema.
 | 0x8F | Desselecionada Unidade 15 |
 | ... | ... |
 | 0x9F| Desselecionada Unidade 31 |
+| 0xA0| Desselecionada Unidade 32 |
 
 Abaixo alguns trechos de código que podem auxiliar no entendimento da solução:
 
@@ -291,3 +406,4 @@ Ficha técnica do ESP8266 NodeMCU, uma placa de desenvolvimento baseada no módu
 
 [Comunicação UART, material da Universidade de Salento](https://www.unisalento.it/documents/20152/804790/SLIDES+LEZIONE+7-2+INTRODUCTION+TO+UART+COMMUNICATION.pdf/bf04aaf1-3b89-50ee-e1a5-05bda9c59fd3?version=1.0&download=true): Documento contendo introdução sobre comunicações UART, elaborando conceitos como Baud Rate e mostra em detalhes passo a passo de como funciona a transmissão de bits via UART.
 
+# Resultados
