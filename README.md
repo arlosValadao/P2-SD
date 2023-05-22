@@ -1,7 +1,5 @@
 # PBL 2 - SISTEMAS DIGITAIS
 
-Apresentação : https://docs.google.com/presentation/d/1lN1N1wogMbvUe_c3uOt6tOPGURtM2sZuDMuj0H8-O6E/edit#slide=id.g1e33044b2fa_0_9
-
 * * *
 
 ## Autores: 
@@ -25,7 +23,9 @@ Apresentação : https://docs.google.com/presentation/d/1lN1N1wogMbvUe_c3uOt6tOP
 
 <!-- &nbsp;&nbsp;&nbsp;[**6.** Limitações da solução desenvolvida](#limitacoes) -->
 
-&nbsp;&nbsp;&nbsp;[**5.** Documentação Utilizada](#documentacao)
+&nbsp;&nbsp;&nbsp;[**5.** Casos de Teste](#casos_de_teste)
+
+&nbsp;&nbsp;&nbsp;[**6.** Documentação Utilizada](#documentacao)
 
 <!-- &nbsp;&nbsp;&nbsp;[**5.** Execução do Projeto](#execucao_projeto) -->
 
@@ -33,14 +33,13 @@ Apresentação : https://docs.google.com/presentation/d/1lN1N1wogMbvUe_c3uOt6tOP
 # <a id="introducao"></a>
 ## Introdução
 
-Este documento apresenta em detalhes como foi feito o desenvolvimento de um sistema de comunicação entre
-uma placa SBC Orange Pi e uma unidade NodeMCU com o objetivo de realizar a consulta e monitoramento de
-diversos sensores embutidos nessa unidade.
+Este documento apresenta em detalhes o desenvolvimento de um sistema de comunicação serial, assíncrona
+half-duplex, entre os Single Board Computers Orange Pi e ESP8266 (NodeMCU). A comunicação serial UART, sobre este protocolo de comunicação fora elaborada demais regras de comunicação, de tal forma que cada mensagem sempre contém 8 bits de informação. Com o objetivo de realizar a consulta e monitoramento de sensores analógicos e digitais embutidos na unidade de medição ESP8266, utilizou-se a linguagem de programação C e C++, o sistema é capaz de lidar com até 32 unidades de medição de forma concorrente ou não, de tal forma que o protocolo proprietário implementado é capaz de fornecer o status de funcionando das respectivas unidades conectadas. A figura 1 mostra como estão dispostas as unidades de medição em relação à SBC Orange PI PC Plus, de tal forma que toda e qualquer informação proveniente das unidades de medição serão exibidas em um display LCD.
 
 ### Descrição do problema:
 
-implementação de um protótipo de sistema de sensoriamento genérico. Na fase de protótipo do projeto será utilizada uma plataforma baseada na NodeMCU para confecção das unidades de sensoriamento. Elas são muito flexíveis e versáteis, sendo ideais para a criação de um ecossistema de Internet das Coisas (IoT). Para simplificar a prova de conceito o sistema deve ser modular, permitindo a substituição na versão de produção.
-O sistema será comandado por um Single Board Computer (SBC), e deve ser capaz de controlar o acionamento de um conjunto variável de sensores, assim como monitorar o seu funcionamento, de forma automatizada. Cada operação de leitura ou monitoramento deve ser representada por um código. Dessa forma, o sistema embarcado na NodeMCU deve ser capaz de interpretá-los e realizá-los de maneira adequada, por meio de uma comunicação UART.
+O problema consistem na implementação de um protótipo de sistema de sensoriamento genérico, por meio do protocolo de comunicação half-duplex UART, uma vez que até 32 unidades de sensoriamentos podem estar conectadas ao Computador de Placa Única. Na fase de protótipo do projeto foi utilizada uma plataforma baseada na NodeMCU para confecção das unidades de sensoriamento. Elas são muito flexíveis e versáteis, sendo ideais para a criação de um ecossistema de Internet das Coisas (IoT). Para simplificar a prova de conceito o sistema deve ser modular, permitindo a substituição na versão de produção.
+O sistema será comandado por um Single Board Computer (SBC), e deve ser capaz de controlar o acionamento de um conjunto variável de sensores, assim como monitorar o seu funcionamento, de forma automatizada. Cada operação de leitura ou monitoramento deve ser representada por um código. Dessa forma, o sistema embarcado na NodeMCU deve ser capaz de interpretá-los e realizá-los de maneira adequada, por meio de um protocolo próprio bem como um menu exibido em um display LCD 16x2, Hitachi, controlado pela Orange PI PC Plus e os respectivos botões conectados a ela, conforme a representação abaixo. * COLOCAR A FIGURA AQUI *
 
 
 ### Requisitos da solução:
@@ -142,7 +141,7 @@ Antes de mais nada é necessário habilitar e configurar os pinos da Orange PI q
 
 ![uarttx3](https://github.com/arlosValadao/P2-SD/assets/42982873/8fc647e7-e0dc-4036-b808-21395c561e47)
 
-Para isso é necessário alterar o arquivo `/boot/orangepiEnv.txt` e digitar:
+Para isso é necessário alterar o arquivo `/boot/orangepiEnv.txt` e inserir e digitar:
 `overlays=uart1 uart2 uart3`
 Após isso, reiniciar o sistema.
 
@@ -245,7 +244,7 @@ Abaixo alguns trechos de código que podem auxiliar no entendimento da solução
 
   * Integração entre protocolo e SBC usando protoboard:
 
-Tudo isso devia ser feito de modo interativo através dos botões disponibilizados na protoboard, sendo assim foram criadas variáveis nas formas de vetores que pudessem representar as diversas requisições/respostas possíveis:
+Tudo isso foi feito de modo interativo, por meio de 3 botões disponibilizados na protoboard e conectados à placa Orange PI PC Plus, sendo assim foram criadas variáveis nas formas de vetores que pudessem representar as diversas requisições/respostas possíveis:
 
 ```
 char monitoringLabels[3][10] = { {"D0"}, {"D1"}, {"A0"} };
@@ -266,7 +265,7 @@ unsigned char deselectNode[MAX_UNITS] = {
   };
 ```
 
-  * Usando a biblioteca [wiringpi](http://wiringpi.com/), podemos ainda declarar o modo dos botões na protoboard como entrada:
+  * Usando a biblioteca [wiringpi](http://wiringpi.com/), podemos ainda declarar o modo dos botões como entrada:
 
 ```
   pinMode(BUTTON_DOWN, INPUT);
@@ -275,6 +274,10 @@ unsigned char deselectNode[MAX_UNITS] = {
 ```
 
 * O código para fazer o controle da UART na Orange, feito usando a biblioteca <wiringSerial.h>
+Para este problema, a saída padrão (stout) é o display Hitachi 16x2, e a entrada padrão (stdin) é composta
+pelos botões de ação mecânica em lógica invertida, do lado da Orange PI PC Plus.
+Este protocolo de comunicação possui um escopo de 3 sensores, isto é, limita-se à consulta e monitoramento de 1 pino analógico e 2 pinos digitais, de cada unidade de monitoramento conectada à Orange PI.
+
 ```
 #define UART_3 "/dev/ttyS3"
 #define BAUD_RATE 9600
@@ -288,6 +291,8 @@ void sendData(int fd, unsigned char* array, unsigned char pos) {
     serialPutchar(fd, array[pos]);
     delay(2);
 }
+
+
 
 //Receber dado digital
 int recvDigitalData(int fd) {
@@ -387,6 +392,9 @@ for (int i = 0; i < MAX_UNITS; i++){
     }
 }
 ```
+Para que este protocolo funcione como esperado, faz-se necessário implementar o código do recebedor na parte da unidades, de tal forma que de forma manual é atribuído um ID para a respectiva unidade, estes variando de 1 até 32. Conforme descrito nas tabelas supracitadas, uma unidade de seleção é selecionada e deselecionada uma vez a cada sessão de troca de mensagens, sendo assim não é obrigatório o envio do ID da unidade a qual se pretende comunicar, uma vez que esta estará selecionada, apenas as mensagens de requisição de status da unidade e do valor dos seus sensores é o sucifiente para uma comunicação plena.
+Destarte a comunicação UART é assíncrona por natureza, devido a isso, foi implementado no protocolo desenvolvido uma timeout, ele consiste de duas tentativas de leitura da unidade previamente selecionada, após isto, é considerado timeout e uma resposta de erro é exibida no display Hitachi. Além de prática de timeout também é mostrado um erro de leitura dos sensores conectados as possíveis 32 unidades de medição, este assim como qualquer outra mensagem é exibida no display LCD.
+
 
 # <a id="documentacao"></a>
 ## Documentação utilizada:
@@ -410,28 +418,26 @@ Ficha técnica do ESP8266 NodeMCU, uma placa de desenvolvimento baseada no módu
 * Diagramna do sistema final.
 
 
-# Testes
-
-Antes de começar os testes, vamos esclarecer qual o mapeamento dos botões
-![uarttx3](https://raw.githubusercontent.com/arlosValadao/P2-SD/main/src/testes/Mapear%20bot%C3%B5es.png)
+# <a id="Casos de Teste"></a>
+## Casos de Teste
 
 A seguir estão alguns testes que foram feitos para demonstração do sistema.
 
-* Passo a Passo para selecionar o sensor digital D1
+Antes de começar os testes, vamos esclarecer qual o mapeamento dos botões
 
-* Passo a Passo para selecionar o sensor digital D0
+![uarttx3](https://raw.githubusercontent.com/arlosValadao/P2-SD/main/src/testes/Mapear%20bot%C3%B5es.png)
 
-* Passo a Passo para selecionar o sensor analogico A0
+* Consultar Sensor Digital D0 de uma unidade previamente selecionada
 
-* Passo a Passo para monitorar todos os sensores da mesma Unidade
+Para que seja possível consultar o status de um sensor digital conectado ao pino D0 de uma unidade de seleção
+é necessário selecionà-la primeiramente, neste exemplo a unidade de medição 20 era a única disponível.
+Uma vez selecionada, é relatado sucesso ao selecionar a unidade no display, logo após, como esperado, é exibido um menu de consulta e monitoramento dos sensores conectados aos pinos A0, D0 e D1, respectivamente.
+Sendo o sensor digital conectado ao pino D0 da ESP8266 um botão de acionamento mecânico em lógica inversa, ou seja este "envia" nivel lógico alto (1) enquanto não pressionado, é esperado que ao realizar a requisição do estado deste pino seja exibido no display LCD 1, como valor do pino D0.
 
-* Passo a Passo para monitorar todas os sensores de todas as unidades
+        = VIDEO AQUI (TA EM src) =
 
+* Consultar todos os sensores de Todas as Unidades Disponíveis
 
-# Conclusão
+O sistema desenvolvido permite o monitoramento de todos os 3 sensores de todas as nodes, determinando alguns segundos de intervalo entre a exibição dos sensores conectados à uma unidade e às outras unidades, de exibição no display LCD. A opção corresponde ao descrito está disposta no menu principal (primeiro menu), de tal forma que todas as unidades disponíveis são selecionadas, os sesu sensores são exibidos no display LCD e por seguinte esta unidade previamente selecionada é deselecionada, e a próxima unidade disponível é buscada, este ciclo se mantém até que o usuário deseje sair, pressionando o botão ENTER (como descrito acima).
 
-
-
-
-
-
+        = VIDEO AQUI (TA EM src) =
