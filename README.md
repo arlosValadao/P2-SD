@@ -17,7 +17,7 @@
 
 &nbsp;&nbsp;&nbsp;[**3.** Softwares Utilizados](#softwares_utilizados)
 
-(&nbsp;&nbsp;&nbsp;[**4.** Descrição da Solução](#descricao_solucao))
+&nbsp;&nbsp;&nbsp;[**4.** Descrição da Solução](#descricao_solucao)
 
 <!-- &nbsp;&nbsp;&nbsp;[**5.** Testes realizados](#testes_realizados) -->
 
