@@ -144,113 +144,6 @@ Para isso é necessário alterar o arquivo `/boot/orangepiEnv.txt` e inserir e d
 `overlays=uart1 uart2 uart3`
 Após isso, reiniciar o sistema.
 
-* O código para fazer o controle da UART na Orange, feito usando a biblioteca <wiringSerial.h>
-```
-#define UART_3 "/dev/ttyS3"
-#define BAUD_RATE 9600
-
-if ((fd = serialOpen (UART_3, BAUD_RATE)) < 0){
-        fprintf (stderr, "Unable to open serial device: %s\n", strerror (errno)) ;
-        return 1 ;
-}
-
-void sendData(int fd, unsigned char* array, unsigned char pos) {
-    serialPutchar(fd, array[pos]);
-    delay(2);
-}
-
-//Receber dado digital
-int recvDigitalData(int fd) {
-    if (serialDataAvail(fd) > 0) {
-        printf("CONSEGUIU LER\n");
-        return serialGetchar(fd); 
-    }
-    delay(8);
-    if (serialDataAvail(fd) > 0) {
-        printf("CONSEGUIU LER\n");
-        return serialGetchar(fd); 
-    }
-    printf("NAO CONSEGUIU LER\n");
-    return -1;
-}
-
-// Receber dado analogico
-int recvAnalogData(int fd) {
-    int analogData = bytes2int(fd);
-    if(analogData > -1) return analogData;
-    delay(8);
-    analogData = bytes2int(fd);
-    if(analogData > -1) return analogData;
-    return analogData; // -1
-}
-```
-
-* O código para receber e enviar dados via UART na ESP.
-```
-if(Serial.available() > 0) {
-    recvd = Serial.read();
-}
-
-//Mandar dado digital
-Serial.write(digitalRead(D0));
-
-//Mandar dado analogico
-analogData = analogRead(A0);
-quocient = analogData / 10;
-rest = analogData % 10;
-Serial.write(quocient);
-delay(2);
-Serial.write(rest);
-break;
-```
-
-* Para o desenvolvimento do Menu.
-Primeiro verificamos quatas nodes estão conectadas na porta UART, e dependendo da quantidade montamos um Menu personalizado.
-```
-int reachUnit(int fd, char *str, unsigned char *select, unsigned char *deselect, int unitId) {
-    int recvData;
-    sendData(fd, select, unitId);
-    recvData = recvDigitalData(fd);
-    if(recvData > -1) {
-        sprintf(str, "Select Unit %d", unitId + 1);
-        printf("REACH UNIT\n");
-        return 1;
-    }
-    sendData(fd, deselect, unitId);
-    return 0;
-}
-
-// DESCOBRINDO UNIDADES ONLINES
-for(int i = 0; i < MAX_UNITS; i++) {
-    recvData = reachUnit(uartfd, vetor_menu01[i], selectNode, deselectNode, i);
-    if(recvData > 0) {
-        availableUnits++;
-    }else{
-        selectNode[i] = -1;
-        deselectNode[i] = -1;
-        vetor_menu01[i][0] = '\0';
-    }
-}
-// CONFIGURANDO OS VETORES PARA FICAREM DE ACORDO COM A QUANTIDADE DE NODES ENCONTRADAS NA REDE
-int cont = 0;
-int cont2 = 0;
-int cont3 = 0;
-for (int i = 0; i < MAX_UNITS; i++){
-    if(selectNode[i] < 255){
-        selectNode[cont] = selectNode[i];
-        cont++;
-    }
-    if(deselectNode[i] < 255){
-        deselectNode[cont2] = deselectNode[i];
-        cont2++;
-    }
-    if(vetor_menu01[i][0] != '\0'){
-        strcpy(vetor_menu01[cont3], vetor_menu01[i]);
-        cont3++;
-    }
-}
-```
-
 2) Desenvolver um protocolo capaz de cumprir os requisitos 
 
 <b>Tabela para seleção de unidades:</b>
@@ -379,7 +272,59 @@ unsigned char deselectNode[MAX_UNITS] = {
   pinMode(BUTTON_ENTER, INPUT);
 ```
 
-  * PARSING E ENVIO DOS DADOS ANALÓGICOS:
+* O código para fazer o controle da UART na Orange, feito usando a biblioteca <wiringSerial.h>
+```
+#define UART_3 "/dev/ttyS3"
+#define BAUD_RATE 9600
+
+if ((fd = serialOpen (UART_3, BAUD_RATE)) < 0){
+        fprintf (stderr, "Unable to open serial device: %s\n", strerror (errno)) ;
+        return 1 ;
+}
+
+void sendData(int fd, unsigned char* array, unsigned char pos) {
+    serialPutchar(fd, array[pos]);
+    delay(2);
+}
+
+//Receber dado digital
+int recvDigitalData(int fd) {
+    if (serialDataAvail(fd) > 0) {
+        printf("CONSEGUIU LER\n");
+        return serialGetchar(fd); 
+    }
+    delay(8);
+    if (serialDataAvail(fd) > 0) {
+        printf("CONSEGUIU LER\n");
+        return serialGetchar(fd); 
+    }
+    printf("NAO CONSEGUIU LER\n");
+    return -1;
+}
+
+// Receber dado analogico
+int recvAnalogData(int fd) {
+    int analogData = bytes2int(fd);
+    if(analogData > -1) return analogData;
+    delay(8);
+    analogData = bytes2int(fd);
+    if(analogData > -1) return analogData;
+    return analogData; // -1
+}
+```
+
+* O código para receber e enviar dados via UART na ESP.
+```
+if(Serial.available() > 0) {
+    recvd = Serial.read();
+}
+
+//Mandar dado digital
+Serial.write(digitalRead(D0));
+
+```
+
+* PARSING E ENVIO DOS DADOS ANALÓGICOS:
 Como o dado a ser lido é de 10 bits, e o núm. máximo de bits a ser enviado é de 8, então foi feita uma divisão por 10 do valor lido pelo pino analógico (A0) e após isso enviado em dois pacotes os valores quociente e resto, após serem enviados os valores são unidos novamente na placa SBC.
 
 ```
@@ -392,8 +337,54 @@ case(0xC1):
   Serial.write(rest);
   break;
 ```
-Trecho de código de parsing e envio na NodeMCU
 
+
+* Para o desenvolvimento do Menu.
+Primeiro verificamos quatas nodes estão conectadas na porta UART, e dependendo da quantidade montamos um Menu personalizado.
+```
+int reachUnit(int fd, char *str, unsigned char *select, unsigned char *deselect, int unitId) {
+    int recvData;
+    sendData(fd, select, unitId);
+    recvData = recvDigitalData(fd);
+    if(recvData > -1) {
+        sprintf(str, "Select Unit %d", unitId + 1);
+        printf("REACH UNIT\n");
+        return 1;
+    }
+    sendData(fd, deselect, unitId);
+    return 0;
+}
+
+// DESCOBRINDO UNIDADES ONLINES
+for(int i = 0; i < MAX_UNITS; i++) {
+    recvData = reachUnit(uartfd, vetor_menu01[i], selectNode, deselectNode, i);
+    if(recvData > 0) {
+        availableUnits++;
+    }else{
+        selectNode[i] = -1;
+        deselectNode[i] = -1;
+        vetor_menu01[i][0] = '\0';
+    }
+}
+// CONFIGURANDO OS VETORES PARA FICAREM DE ACORDO COM A QUANTIDADE DE NODES ENCONTRADAS NA REDE
+int cont = 0;
+int cont2 = 0;
+int cont3 = 0;
+for (int i = 0; i < MAX_UNITS; i++){
+    if(selectNode[i] < 255){
+        selectNode[cont] = selectNode[i];
+        cont++;
+    }
+    if(deselectNode[i] < 255){
+        deselectNode[cont2] = deselectNode[i];
+        cont2++;
+    }
+    if(vetor_menu01[i][0] != '\0'){
+        strcpy(vetor_menu01[cont3], vetor_menu01[i]);
+        cont3++;
+    }
+}
+```
 
 # <a id="documentacao"></a>
 ## Documentação utilizada:
